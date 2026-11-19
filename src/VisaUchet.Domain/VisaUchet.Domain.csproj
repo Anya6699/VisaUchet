@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain model: entities, enumerations and business rules; no external dependencies -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>VisaUchet.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

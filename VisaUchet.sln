@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{52CD9D8A-7BBB-4E6F-A1ED-C2B886315E55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisaUchet.Domain", "src\VisaUchet.Domain\VisaUchet.Domain.csproj", "{2435A5BC-F595-4FB4-8BC1-F2768514B462}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisaUchet.Application", "src\VisaUchet.Application\VisaUchet.Application.csproj", "{4BF80CB4-448C-4779-AD2B-83ADCDE24282}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisaUchet.Infrastructure", "src\VisaUchet.Infrastructure\VisaUchet.Infrastructure.csproj", "{BFA087F6-5AA6-45FA-B805-127C3F18A558}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisaUchet.WinForms", "src\VisaUchet.WinForms\VisaUchet.WinForms.csproj", "{698515CE-64AF-4D57-8CAA-5C748704CCDA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{55FDC716-41D6-4C5E-85F2-FBC8D9C0E966}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisaUchet.Tests", "tests\VisaUchet.Tests\VisaUchet.Tests.csproj", "{560390B1-6F28-4B83-BC59-2E86D90E5FF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2435A5BC-F595-4FB4-8BC1-F2768514B462}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2435A5BC-F595-4FB4-8BC1-F2768514B462}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2435A5BC-F595-4FB4-8BC1-F2768514B462}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2435A5BC-F595-4FB4-8BC1-F2768514B462}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BF80CB4-448C-4779-AD2B-83ADCDE24282}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BF80CB4-448C-4779-AD2B-83ADCDE24282}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BF80CB4-448C-4779-AD2B-83ADCDE24282}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BF80CB4-448C-4779-AD2B-83ADCDE24282}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFA087F6-5AA6-45FA-B805-127C3F18A558}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFA087F6-5AA6-45FA-B805-127C3F18A558}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFA087F6-5AA6-45FA-B805-127C3F18A558}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFA087F6-5AA6-45FA-B805-127C3F18A558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{560390B1-6F28-4B83-BC59-2E86D90E5FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{560390B1-6F28-4B83-BC59-2E86D90E5FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{560390B1-6F28-4B83-BC59-2E86D90E5FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{560390B1-6F28-4B83-BC59-2E86D90E5FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{698515CE-64AF-4D57-8CAA-5C748704CCDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{698515CE-64AF-4D57-8CAA-5C748704CCDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{698515CE-64AF-4D57-8CAA-5C748704CCDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{698515CE-64AF-4D57-8CAA-5C748704CCDA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{698515CE-64AF-4D57-8CAA-5C748704CCDA} = {52CD9D8A-7BBB-4E6F-A1ED-C2B886315E55}
+		{2435A5BC-F595-4FB4-8BC1-F2768514B462} = {52CD9D8A-7BBB-4E6F-A1ED-C2B886315E55}
+		{4BF80CB4-448C-4779-AD2B-83ADCDE24282} = {52CD9D8A-7BBB-4E6F-A1ED-C2B886315E55}
+		{BFA087F6-5AA6-45FA-B805-127C3F18A558} = {52CD9D8A-7BBB-4E6F-A1ED-C2B886315E55}
+		{560390B1-6F28-4B83-BC59-2E86D90E5FF9} = {55FDC716-41D6-4C5E-85F2-FBC8D9C0E966}
+	EndGlobalSection
+EndGlobal

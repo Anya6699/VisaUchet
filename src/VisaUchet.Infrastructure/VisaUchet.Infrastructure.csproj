@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Data access through ADO.NET abstractions (System.Data.Common); the provider is chosen in the UI project -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>VisaUchet.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VisaUchet.Application\VisaUchet.Application.csproj" />
+  </ItemGroup>
+</Project>
