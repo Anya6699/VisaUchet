@@ -90,7 +90,7 @@ public class AuthServiceTests
     [InlineData(Role.Operator, FormCode.StatusChange, false)]
     [InlineData(Role.ConsulOfficer, FormCode.VisaJournal, true)]
     [InlineData(Role.Head, FormCode.Report, true)]
-    [InlineData(Role.Admin, FormCode.ApplicationCard, false)]
+    [InlineData(Role.Admin, FormCode.ApplicationCard, true)]
     public void CanOpen_FollowsRoleMatrix(Role role, FormCode form, bool expected)
     {
         var employee = new Employee { Login = "x", FullName = "x", Role = role, PasswordHash = string.Empty };

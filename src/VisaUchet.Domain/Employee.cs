@@ -11,7 +11,7 @@ public sealed class Employee
         [Role.Operator] = [FormCode.Registration, FormCode.ApplicationCard],
         [Role.ConsulOfficer] = [FormCode.StatusChange, FormCode.ApplicationCard, FormCode.VisaJournal],
         [Role.Head] = [FormCode.ApplicationCard, FormCode.VisaJournal, FormCode.Report],
-        [Role.Admin] = [FormCode.Users],
+        [Role.Admin] = [FormCode.Users, FormCode.ApplicationCard],
     };
 
     public required string Login { get; init; }
