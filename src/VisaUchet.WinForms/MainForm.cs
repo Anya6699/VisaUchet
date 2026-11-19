@@ -20,11 +20,14 @@ internal sealed class MainForm : Form
         MinimumSize = new Size(760, 420);
         BuildLayout();
         _idle = new IdleTracker(TimeSpan.FromMinutes(services.Settings.IdleLogoutMinutes), services.Clock);
-        _idle.TimedOut += (_, _) => LogOutByTimeout();
+        _idle.TimedOut += (_, _) => LogOut(byTimeout: true);
         FormClosed += (_, _) => _idle.Dispose();
+        Shown += (_, _) => ShowAllApplications();
     }
 
-    public bool LoggedOutByTimeout { get; private set; }
+    // true – the session ended by «Выход из аккаунта» or by idle timeout (SEC-02): the login window is shown again.
+    // Closing the window by the cross closes the application
+    public bool LoggedOut { get; private set; }
 
     private void BuildLayout()
     {
@@ -47,7 +50,7 @@ internal sealed class MainForm : Form
         AddCommand(panel, FormCode.VisaJournal, "Журнал выданных виз (Ф4)", () => Show(new JournalForm(_services)));
         AddCommand(panel, FormCode.Report, "Отчёт о заявках (Ф5)", () => Show(new ReportForm(_services)));
         AddCommand(panel, FormCode.Users, "Пользователи", () => Show(new UsersForm(_services)));
-        panel.Controls.Add(Ui.Button("Выход", (_, _) => Close()));
+        panel.Controls.Add(Ui.Button("Выход из аккаунта", (_, _) => LogOut(byTimeout: false)));
         return panel;
     }
 
@@ -63,21 +66,36 @@ internal sealed class MainForm : Form
     {
         var panel = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(6, 0, 6, 6) };
         var find = Ui.Button("Найти", (_, _) => Search());
+        var all = Ui.Button("Показать все", (_, _) => ShowAllApplications());
         _query.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Search(); } };
         panel.Controls.Add(new Label { Text = "Номер заявки, фамилия (латиницей) или номер паспорта:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
         panel.Controls.Add(_query);
         panel.Controls.Add(find);
+        panel.Controls.Add(all);
         return panel;
+    }
+
+    // On opening and with an empty search field the list contains all applications
+    private void ShowAllApplications()
+    {
+        if (_employee.CanOpen(FormCode.ApplicationCard))
+        {
+            _query.Clear();
+            Search();
+        }
     }
 
     private void Search()
     {
         IReadOnlyList<ApplicationSummary> found = [];
-        if (!Ui.Run(_services.Log, () => found = _services.Applications.Search(_query.Text)))
+        if (Ui.Run(_services.Log, () => found = _services.Applications.Search(_query.Text)))
         {
-            return;
+            ShowResults(found);
         }
+    }
 
+    private void ShowResults(IReadOnlyList<ApplicationSummary> found)
+    {
         _results.Rows.Clear();
         var today = _services.Clock.Today;
         foreach (var row in found)
@@ -91,7 +109,7 @@ internal sealed class MainForm : Form
             }
         }
 
-        if (found.Count == 0)
+        if (found.Count == 0 && _query.Text.Trim().Length > 0)
         {
             Ui.Info("Заявки не найдены.");
         }
@@ -118,10 +136,7 @@ internal sealed class MainForm : Form
     {
         using var card = new ApplicationCardForm(_services, _employee, number);
         card.ShowDialog(this);
-        if (_query.Text.Length > 0)
-        {
-            Search();
-        }
+        Search();
     }
 
     private void Show(Form form)
@@ -133,9 +148,14 @@ internal sealed class MainForm : Form
     }
 
     // Closes every open window of the session and returns to the login window
-    private void LogOutByTimeout()
+    private void LogOut(bool byTimeout)
     {
-        LoggedOutByTimeout = true;
+        if (!byTimeout)
+        {
+            _services.Log.Info($"Выход из аккаунта: {_employee.Login}");
+        }
+
+        LoggedOut = true;
         foreach (var form in System.Windows.Forms.Application.OpenForms.Cast<Form>().Where(f => f != this).ToList())
         {
             form.Close();

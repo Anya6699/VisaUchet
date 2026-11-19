@@ -36,22 +36,23 @@ internal sealed class StatusChangeForm : Form
 
     private void LoadCard()
     {
-        if (!Ui.Run(_services.Log, () => _card = _services.Applications.GetCard(_number)) || _card is null)
+        if (Ui.Run(_services.Log, () => _card = _services.Applications.GetCard(_number)) && _card is not null)
         {
-            Close();
-            return;
-        }
+            BuildLayout(_card);
+            FillVisaDefaults(_card.Application.Requested);
+            _status.Items.AddRange(_card.AllowedStatuses.Select(s => (object)new Choice<ApplicationStatus>(s, StatusNames.Of(s))).ToArray());
+            _status.SelectedIndexChanged += (_, _) => UpdateVisaGroup();
+            if (_status.Items.Count > 0)
+            {
+                _status.SelectedIndex = 0;
+            }
 
-        BuildLayout(_card);
-        FillVisaDefaults(_card.Application.Requested);
-        _status.Items.AddRange(_card.AllowedStatuses.Select(s => (object)new Choice<ApplicationStatus>(s, StatusNames.Of(s))).ToArray());
-        _status.SelectedIndexChanged += (_, _) => UpdateVisaGroup();
-        if (_status.Items.Count > 0)
+            UpdateVisaGroup();
+        }
+        else
         {
-            _status.SelectedIndex = 0;
+            Finish(DialogResult.Cancel);
         }
-
-        UpdateVisaGroup();
     }
 
     private void BuildLayout(ApplicationCard card)
@@ -71,10 +72,12 @@ internal sealed class StatusChangeForm : Form
         Ui.AddRow(visa, "Валюта *", _currency);
         _visaGroup.Controls.Add(visa);
         var save = Ui.Button("Сохранить", (_, _) => Save());
+        var cancel = Ui.Button("Отмена (Esc)", (_, _) => Finish(DialogResult.Cancel));
         AcceptButton = save;
+        CancelButton = cancel;
         Controls.Add(_visaGroup);
         Controls.Add(main);
-        Controls.Add(Ui.Buttons(save, Ui.Button("Отмена", (_, _) => Close())));
+        Controls.Add(Ui.Buttons(save, cancel));
         _errors.Map(CommentRules.Field, _comment).Map(Fields.VisaNumber, _visaNumber).Map(Fields.ValidFrom, _validFrom)
             .Map(Fields.ValidTo, _validTo).Map(Fields.Multiplicity, _multiplicity).Map(Fields.StayDays, _stayDays)
             .Map(Fields.Fee, _fee).Map(Fields.Currency, _currency);
@@ -93,20 +96,30 @@ internal sealed class StatusChangeForm : Form
 
     private void UpdateVisaGroup() => _visaGroup.Enabled = IssuingVisa;
 
+    // Activity «Изменение статуса заявки» (figure 2.2): check data → [wrong] show error, nothing is saved
+    // → [correct] history record + status (+ visa journal) in one transaction → card refresh by the caller.
+    // Both branches merge at the end of the method – a single exit
     private void Save()
     {
-        if (_status.SelectedItem is not Choice<ApplicationStatus> choice)
+        if (_status.SelectedItem is Choice<ApplicationStatus> choice)
         {
-            Ui.Error("Выберите новый статус.");
-            return;
+            var request = new StatusChangeRequest(_number, choice.Value, _comment.Text, IssuingVisa ? ReadVisa() : null);
+            if (Ui.Run(_services.Log, () => _services.Applications.ChangeStatus(request, _employee.Login), _errors))
+            {
+                Finish(DialogResult.OK);
+            }
         }
+        else
+        {
+            Ui.Error("Выберите новый статус. Данные не сохранены.");
+        }
+    }
 
-        var request = new StatusChangeRequest(_number, choice.Value, _comment.Text, IssuingVisa ? ReadVisa() : null);
-        if (Ui.Run(_services.Log, () => _services.Applications.ChangeStatus(request, _employee.Login), _errors))
-        {
-            DialogResult = DialogResult.OK;
-            Close();
-        }
+    // Single final node of the form
+    private void Finish(DialogResult result)
+    {
+        DialogResult = result;
+        Close();
     }
 
     private VisaIssueInput ReadVisa() => new(

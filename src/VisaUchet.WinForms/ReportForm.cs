@@ -21,14 +21,24 @@ internal sealed class ReportForm : OutputForm
         BuildLayout();
     }
 
+    // Activity «Формирование отчёта о заявках» (figure 2.3): select applications for the period →
+    // [none] message «Нет данных за выбранный период», the report is not built (RPT-02) →
+    // [found] indicators are calculated and shown. Both branches merge at the end of the method – a single exit
     public override void Render()
     {
         ApplicationReport? report = null;
-        if (!Ui.Run(Services.Log, () => report = Services.Reports.Build(Ui.Date(_from), Ui.Date(_to))) || report is null)
+        if (Ui.Run(Services.Log, () => report = Services.Reports.Build(Ui.Date(_from), Ui.Date(_to))) && report is not null)
         {
-            return;
+            Show(report);
         }
+        else
+        {
+            Clear();
+        }
+    }
 
+    private void Show(ApplicationReport report)
+    {
         _report = report;
         _indicators.BeginUpdate();
         _indicators.Items.Clear();
@@ -45,6 +55,14 @@ internal sealed class ReportForm : OutputForm
 
         _indicators.EndUpdate();
         MarkRendered();
+    }
+
+    // The previous report must not stay on the screen when the new one is not built
+    private void Clear()
+    {
+        _report = null;
+        _indicators.Items.Clear();
+        _indicators.Groups.Clear();
     }
 
     protected override IReadOnlyList<string> GetPrintLines()

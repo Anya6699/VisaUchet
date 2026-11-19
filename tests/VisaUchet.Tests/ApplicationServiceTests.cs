@@ -82,12 +82,14 @@ public class ApplicationServiceTests
     public void GetCard_UnknownNumber_Throws() => Assert.Throws<DomainException>(() => _service.GetCard("VZ-2026-999999"));
 
     [Fact]
-    public void Search_EmptyText_ReturnsNothing()
+    public void Search_EmptyText_ReturnsAllApplications()
     {
         _service.Register(TestData.Input(), "operator", null);
+        _service.Register(TestData.Input(), "operator", null);
 
-        Assert.Empty(_service.Search("  "));
-        Assert.Single(_service.Search("SMI"));
+        Assert.Equal(2, _service.Search("  ").Count);
+        Assert.Equal(2, _service.Search("SMI").Count);
+        Assert.Empty(_service.Search("ZZZ"));
     }
 
     private string Registered(ApplicationStatus status)

@@ -49,7 +49,8 @@ internal static class Program
         }
     }
 
-    // After an idle logout (SEC-02) the login window is shown again
+    // After «Выход из аккаунта» or an idle logout (SEC-02) the login window is shown again;
+    // closing the main window by the cross closes the application
     private static void RunSessions(Services services)
     {
         while (true)
@@ -62,7 +63,7 @@ internal static class Program
 
             using var main = new MainForm(services, login.Employee);
             WinFormsApp.Run(main);
-            if (!main.LoggedOutByTimeout)
+            if (!main.LoggedOut)
             {
                 return;
             }

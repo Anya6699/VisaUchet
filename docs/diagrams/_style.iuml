@@ -1,0 +1,14 @@
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #000000
+skinparam ActivityBackgroundColor #EEF2F7
+skinparam ActivityBorderColor #000000
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #000000
+skinparam ActivityBarColor #000000
+skinparam ActivityStartColor #000000
+skinparam ActivityEndColor #000000
+skinparam SwimlaneBorderColor #000000
+skinparam SwimlaneTitleFontStyle bold
+skinparam SwimlaneWidth same

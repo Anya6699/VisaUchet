@@ -6,6 +6,7 @@ namespace VisaUchet.Application;
 public sealed class ApplicationService
 {
     public const int SearchLimit = 100;
+    public const int ListAllLimit = 1000;
 
     private readonly IApplicationRepository _repository;
     private readonly StatusRules _rules;
@@ -99,10 +100,11 @@ public sealed class ApplicationService
             _rules.AllowedFrom(application.Status));
     }
 
+    // Empty text – all applications (newest first), otherwise search by number, last name or passport
     public IReadOnlyList<ApplicationSummary> Search(string text)
     {
         var query = text?.Trim() ?? string.Empty;
-        return query.Length == 0 ? [] : _repository.Search(query, SearchLimit);
+        return _repository.Search(query, query.Length == 0 ? ListAllLimit : SearchLimit);
     }
 
     private VisaApplication Load(string number) =>
