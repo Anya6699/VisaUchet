@@ -5,15 +5,34 @@ namespace VisaUchet.Domain;
 // REG-02, REG-06: checks of form Ф1 fields (SRS table 4.1)
 public static partial class RegistrationValidator
 {
+    // Full check used by the service: field data (REG-02) and passport term (REG-06)
     public static ValidationResult Validate(ApplicationInput input, DateOnly today)
+    {
+        var result = ValidateData(input, today);
+        CheckPassportTerm(input, result);
+        return result;
+    }
+
+    // REG-02: «Проверить данные заявки» – errors are shown next to the fields and the operator corrects them
+    public static ValidationResult ValidateData(ApplicationInput input, DateOnly today)
     {
         ArgumentNullException.ThrowIfNull(input);
         var result = new ValidationResult();
         CheckPerson(input, today, result);
-        CheckPassport(input, result);
+        CheckPassportNumber(input, result);
         CheckVisa(input, today, result);
         return result;
     }
+
+    // REG-06: «Проверить срок действия паспорта» – passport valid at least 90 days after the visa ends
+    public static bool IsPassportTermSufficient(ApplicationInput input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        return input.PassportExpiry >= RequiredPassportExpiry(input);
+    }
+
+    public static DateOnly RequiredPassportExpiry(ApplicationInput input) =>
+        input.ValidTo.AddDays(DomainConstants.PassportReserveDays);
 
     private static void CheckPerson(ApplicationInput input, DateOnly today, ValidationResult result)
     {
@@ -23,18 +42,17 @@ public static partial class RegistrationValidator
         result.Require(Countries.IsKnown(input.Citizenship), Fields.Citizenship, "Выберите гражданство из списка ISO 3166-1.");
     }
 
-    private static void CheckPassport(ApplicationInput input, ValidationResult result)
-    {
+    private static void CheckPassportNumber(ApplicationInput input, ValidationResult result) =>
         result.Require(
             PassportPattern().IsMatch(input.PassportNumber ?? string.Empty),
             Fields.PassportNumber,
             $"Номер паспорта: {DomainConstants.PassportMinLength}–{DomainConstants.PassportMaxLength} латинских букв и цифр.");
-        var required = input.ValidTo.AddDays(DomainConstants.PassportReserveDays);
+
+    private static void CheckPassportTerm(ApplicationInput input, ValidationResult result) =>
         result.Require(
-            input.PassportExpiry >= required,
+            IsPassportTermSufficient(input),
             Fields.PassportExpiry,
-            $"Паспорт должен действовать не менее {DomainConstants.PassportReserveDays} суток после окончания визы (до {required:dd.MM.yyyy}).");
-    }
+            $"Паспорт должен действовать не менее {DomainConstants.PassportReserveDays} суток после окончания визы (до {RequiredPassportExpiry(input):dd.MM.yyyy}).");
 
     private static void CheckVisa(ApplicationInput input, DateOnly today, ValidationResult result)
     {

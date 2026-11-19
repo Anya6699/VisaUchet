@@ -66,9 +66,14 @@ internal sealed class RegistrationForm : Form
         Ui.AddRow(grid, "Срок пребывания, сут. *", _stayDays);
         Ui.AddRow(grid, string.Empty, _urgent);
         var register = Ui.Button("Зарегистрировать", (_, _) => TryRegister());
+
+        // Full exit from the input loop: the operator can leave the form at any moment (also by Esc)
+        var exit = Ui.Button("Выйти без регистрации (Esc)", (_, _) => Finish(DialogResult.Cancel));
+        exit.ForeColor = Color.Firebrick;
         AcceptButton = register;
+        CancelButton = exit;
         Controls.Add(grid);
-        Controls.Add(Ui.Buttons(register, Ui.Button("Отмена", (_, _) => Close())));
+        Controls.Add(Ui.Buttons(register, exit));
     }
 
     private void MapErrors() => _errors
@@ -93,33 +98,61 @@ internal sealed class RegistrationForm : Form
         (int)_stayDays.Value,
         _urgent.Checked);
 
-    // REG-02: check → REG-03: existing applicant → REG-04: number, status and control date
+    // Activity «Регистрация заявки» (figure 2.1):
+    // check data → [errors] show them at the fields and return to input (the operator fixes or leaves by «Выйти без регистрации»)
+    //            → [no errors] check passport term → [insufficient] reject registration
+    //                                              → [sufficient] find applicant → assign number, status and control date
+    // Every completed branch ends in Finish – the single exit of the form
     private void TryRegister()
     {
         var input = ReadInput();
-        var check = RegistrationValidator.Validate(input, _services.Clock.Today);
+        var check = RegistrationValidator.ValidateData(input, _services.Clock.Today);
         if (!check.IsValid)
         {
             _errors.Show(check.Errors);
-            return;
         }
-
-        ApplicantMatch? match = null;
-        if (!Ui.Run(_services.Log, () => match = _services.Applications.FindExistingApplicant(input), _errors)
-            || (match is not null && !ConfirmExisting(match)))
+        else if (!RegistrationValidator.IsPassportTermSufficient(input))
         {
-            return;
+            Reject(input);
         }
+        else
+        {
+            Register(input);
+        }
+    }
 
+    // REG-06: the registration is rejected with a message; the application is not created
+    private void Reject(ApplicationInput input)
+    {
+        _errors.Show([new FieldError(Fields.PassportExpiry, "Срок действия паспорта недостаточен.")]);
+        Ui.Error(
+            $"Регистрация отклонена (REG-06).\nПаспорт должен действовать не менее {DomainConstants.PassportReserveDays} суток " +
+            $"после окончания визы – до {RegistrationValidator.RequiredPassportExpiry(input).ToString(Ui.DateFormat)}.\n" +
+            "Заявка не зарегистрирована.");
+        Finish(DialogResult.Abort);
+    }
+
+    // REG-03: existing applicant is confirmed by the operator, otherwise a new one is created; REG-04: number and control date
+    private void Register(ApplicationInput input)
+    {
+        ApplicantMatch? match = null;
         RegistrationResult? result = null;
-        if (Ui.Run(_services.Log, () => result = _services.Applications.Register(input, _employee.Login, match?.Applicant.Id), _errors)
-            && result is not null)
+        var ok = Ui.Run(_services.Log, () => match = _services.Applications.FindExistingApplicant(input), _errors)
+            && (match is null || ConfirmExisting(match))
+            && Ui.Run(_services.Log, () => result = _services.Applications.Register(input, _employee.Login, match?.Applicant.Id), _errors);
+        if (ok && result is not null)
         {
             Ui.Info($"Заявка зарегистрирована.\nНомер: {result.Number}\nКонтрольный срок: {result.ControlDate.ToString(Ui.DateFormat)}");
             RegisteredNumber = result.Number;
-            DialogResult = DialogResult.OK;
-            Close();
+            Finish(DialogResult.OK);
         }
+    }
+
+    // Single final node of the form: success, rejection and the operator's exit all close the form here
+    private void Finish(DialogResult result)
+    {
+        DialogResult = result;
+        Close();
     }
 
     private static bool ConfirmExisting(ApplicantMatch match) => Ui.Confirm(

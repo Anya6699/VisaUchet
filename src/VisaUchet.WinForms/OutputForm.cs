@@ -67,22 +67,33 @@ internal abstract class OutputForm : Form, IExportable
         return lines;
     }
 
+    // «Сохранить в PDF» – by the user's decision; «не сохранять» and «сохранить» merge at the end of the method
     private void SavePdf()
     {
-        using var dialog = new SaveFileDialog
+        if (GetPrintLines().Count == 0)
         {
-            Filter = "PDF (*.pdf)|*.pdf",
-            FileName = $"{ReportTitle}_{Services.Clock.Now:yyyyMMdd_HHmm}.pdf",
-        };
-        if (dialog.ShowDialog(this) != DialogResult.OK)
-        {
-            return;
+            Ui.Info("Нет данных для сохранения. Сначала сформируйте документ.");
         }
+        else
+        {
+            using var dialog = new SaveFileDialog
+            {
+                Filter = "PDF (*.pdf)|*.pdf",
+                FileName = $"{ReportTitle}_{Services.Clock.Now:yyyyMMdd_HHmm}.pdf",
+            };
+            if (dialog.ShowDialog(this) == DialogResult.OK)
+            {
+                WritePdf(dialog.FileName);
+            }
+        }
+    }
 
+    private void WritePdf(string path)
+    {
         try
         {
-            ExportPdf(dialog.FileName);
-            Ui.Info($"Файл сохранён: {dialog.FileName}");
+            ExportPdf(path);
+            Ui.Info($"Файл сохранён: {path}");
         }
         catch (Exception ex) when (ex is InvalidOperationException or InvalidPrinterException or System.ComponentModel.Win32Exception)
         {

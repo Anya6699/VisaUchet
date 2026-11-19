@@ -29,12 +29,13 @@ internal sealed class LoginForm : Form
         grid.SetColumnSpan(grid.Controls[0], 2);
         Ui.AddRow(grid, "Логин", _login);
         Ui.AddRow(grid, "Пароль", _password);
+        // No separate «Выход» button: the application is closed by the window cross (or Esc)
         var enter = Ui.Button("Войти", (_, _) => TryLogin());
-        var cancel = Ui.Button("Выход", (_, _) => Close());
         AcceptButton = enter;
-        CancelButton = cancel;
+        KeyPreview = true;
+        KeyDown += (_, e) => { if (e.KeyCode == Keys.Escape) { Close(); } };
         Controls.Add(grid);
-        Controls.Add(Ui.Buttons(enter, cancel));
+        Controls.Add(Ui.Buttons(enter));
     }
 
     private void TryLogin()

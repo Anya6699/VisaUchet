@@ -59,7 +59,7 @@ public sealed class SqlApplicationRepository : IApplicationRepository
             SELECT TOP (@limit) a.Application_Number, a.Registration_Date, p.Last_Name, p.First_Name,
                    p.Passport_Number, a.Status_Code, a.Control_Date
             FROM Visa_Application a JOIN Applicant p ON p.Applicant_Id = a.Applicant_Id
-            WHERE a.Application_Number = @text OR p.Passport_Number = @text OR p.Last_Name LIKE @prefix
+            WHERE @text = N'' OR a.Application_Number = @text OR p.Passport_Number = @text OR p.Last_Name LIKE @prefix
             ORDER BY a.Registration_Date DESC
             """;
         using var connection = _connections.Open();

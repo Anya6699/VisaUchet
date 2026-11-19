@@ -35,6 +35,17 @@ public class RegistrationValidatorTests
     }
 
     [Fact]
+    public void ValidateData_PassportExpiresTooSoon_IsCheckedSeparately()
+    {
+        var input = TestData.Input();
+        var shortPassport = input with { PassportExpiry = input.ValidTo.AddDays(30) };
+
+        Assert.True(RegistrationValidator.ValidateData(shortPassport, TestData.Today).IsValid);
+        Assert.False(RegistrationValidator.IsPassportTermSufficient(shortPassport));
+        Assert.True(RegistrationValidator.IsPassportTermSufficient(input));
+    }
+
+    [Fact]
     public void Validate_ShortTermVisaLongerThan90Days_ReturnsPeriodError()
     {
         var result = RegistrationValidator.Validate(TestData.Input(periodDays: 91), TestData.Today);

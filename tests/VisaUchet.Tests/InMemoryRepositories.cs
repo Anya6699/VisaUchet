@@ -14,7 +14,7 @@ internal sealed class InMemoryApplicationRepository : IApplicationRepository
     public VisaApplication? FindByNumber(string number) => Applications.FirstOrDefault(a => a.Number == number);
 
     public IReadOnlyList<ApplicationSummary> Search(string text, int limit) => Applications
-        .Where(a => a.Number.Contains(text) || a.Applicant.LastName.StartsWith(text))
+        .Where(a => text.Length == 0 || a.Number.Contains(text) || a.Applicant.LastName.StartsWith(text))
         .Take(limit)
         .Select(a => new ApplicationSummary(a.Number, a.RegistrationDate, a.Applicant.FullName(), a.Applicant.PassportNumber, a.Status, a.ControlDate))
         .ToList();
